@@ -15,8 +15,8 @@ var ErrorUnexpectedEOF = fmt.Errorf("Expected separator line, Got EOF")
 var separatorPrefix = []byte("From ")
 
 //FindSeparator returns the start index and length of the first RFC 4155 "default" compliant separator line:
-//From <RFC 2822 "addr-spec"> <timestamp in UNIX ctime format><EOL marker>
-//idx is negative a separator line is not found
+//`From <RFC 2822 "addr-spec"> <timestamp in UNIX ctime format><EOL marker>`.
+//idx is negative when a separator line is not found
 func FindSeparator(data []byte) (idx, size int) {
 	//find "From "
 	var start int // F in "From "
