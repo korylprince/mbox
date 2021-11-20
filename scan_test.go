@@ -10,7 +10,7 @@ import (
 	"strings"
 	"testing"
 
-	. "github.com/korylprince/mbox"
+	"github.com/korylprince/mbox"
 )
 
 // slowReader is a reader that returns only a few bytes at a time, to test the incremental
@@ -47,7 +47,7 @@ func TestSplitError(t *testing.T) {
 	// Read the data.
 	const text = "abcdefghijklmnopqrstuvwxyz"
 	buf := strings.NewReader(text)
-	s := NewScanner(&slowReader{1, buf})
+	s := mbox.NewScanner(&slowReader{1, buf})
 	s.Split(errorSplit)
 	var i int
 	for i = 0; s.Scan(); i++ {
@@ -73,7 +73,7 @@ func (alwaysError) Read(p []byte) (int, error) {
 }
 
 func TestNonEOFWithEmptyRead(t *testing.T) {
-	scanner := NewScanner(alwaysError{})
+	scanner := mbox.NewScanner(alwaysError{})
 	for scanner.Scan() {
 		t.Fatal("read should fail")
 	}
@@ -91,7 +91,7 @@ func (endlessZeros) Read(p []byte) (int, error) {
 }
 
 func TestBadReader(t *testing.T) {
-	scanner := NewScanner(endlessZeros{})
+	scanner := mbox.NewScanner(endlessZeros{})
 	for scanner.Scan() {
 		t.Fatal("read should fail")
 	}
@@ -117,7 +117,7 @@ func commaSplit(data []byte, atEOF bool) (advance int, token []byte, err error) 
 }
 
 func TestEmptyTokens(t *testing.T) {
-	s := NewScanner(strings.NewReader("1,2,3,"))
+	s := mbox.NewScanner(strings.NewReader("1,2,3,"))
 	values := []string{"1", "2", "3", ""}
 	s.Split(commaSplit)
 	var i int
@@ -145,7 +145,7 @@ func loopAtEOFSplit(data []byte, atEOF bool) (advance int, token []byte, err err
 }
 
 func TestDontLoopForever(t *testing.T) {
-	s := NewScanner(strings.NewReader("abc"))
+	s := mbox.NewScanner(strings.NewReader("abc"))
 	s.Split(loopAtEOFSplit)
 	// Expect a panic
 	defer func() {
@@ -180,7 +180,7 @@ func (c *countdown) split(data []byte, atEOF bool) (advance int, token []byte, e
 // Check that the looping-at-EOF check doesn't trigger for merely empty tokens.
 func TestEmptyLinesOK(t *testing.T) {
 	c := countdown(10000)
-	s := NewScanner(strings.NewReader(strings.Repeat("\n", 10000)))
+	s := mbox.NewScanner(strings.NewReader(strings.Repeat("\n", 10000)))
 	s.Split(c.split)
 	for s.Scan() {
 	}

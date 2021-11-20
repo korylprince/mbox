@@ -1,13 +1,15 @@
 package mbox_test
 
-//go:generate go-bindata -pkg mbox_test -o data_test.go test_data/
-
 import (
+	"embed"
 	"fmt"
 	"testing"
 
-	. "github.com/korylprince/mbox"
+	"github.com/korylprince/mbox"
 )
+
+//go:embed test_data
+var testdata embed.FS
 
 var separatorTests = []struct {
 	text   string
@@ -123,7 +125,7 @@ var separatorTests = []struct {
 
 func TestFindSeparator(t *testing.T) {
 	for _, test := range separatorTests {
-		i, l := FindSeparator([]byte(test.text))
+		i, l := mbox.FindSeparator([]byte(test.text))
 		if i != test.idx {
 			t.Errorf("Got idx: %v, Expected: %v", i, test.idx)
 		}
@@ -146,7 +148,7 @@ var mboxTests = []struct {
 	{ //eof
 		true,
 		0,
-		ErrorUnexpectedEOF,
+		mbox.ErrorUnexpectedEOF,
 	},
 	{ //good; eof and no data left
 		true,
@@ -172,20 +174,20 @@ var mboxTests = []struct {
 
 func TestScanMessage(t *testing.T) {
 	for i, test := range mboxTests {
-		data := MustAsset(fmt.Sprintf("test_data/%d.mbox", i))
-		res := MustAsset(fmt.Sprintf("test_data/%d.res", i))
-		a, d, e := ScanMessage(data, test.atEOF)
+		data, _ := testdata.ReadFile(fmt.Sprintf("test_data/%d.mbox", i))
+		res, _ := testdata.ReadFile(fmt.Sprintf("test_data/%d.res", i))
+		a, d, e := mbox.ScanMessage(data, test.atEOF)
 
 		if a != test.advance {
-			t.Errorf("Got advance: %v, Expected: %v", a, test.advance)
+			t.Errorf("Test %d: Got advance: %v, Expected: %v", i, a, test.advance)
 		}
 
 		if string(d) != string(res) {
-			t.Errorf("Got data: %s, Expected: %s", d, res)
+			t.Errorf("Test %d: Got data: %s, Expected: %s", i, d, res)
 		}
 
 		if e != test.err {
-			t.Errorf("Got err: %v, Expected: %v", e, test.err)
+			t.Errorf("Test %d: Got err: %v, Expected: %v", i, e, test.err)
 		}
 	}
 }
