@@ -4,6 +4,8 @@ This package provides a `ScanMessage` function that can be used with `bufio.Scan
 
 Since emails are often larger than `bufio.Scanner`'s token size limit of 64kB, a custom `mbox.Scanner` is provided, with a tunable `MaxTokenSize` (which defaults to 64MB.) This `Scanner` is just a stripped down version of the standard library version with a few changes (see below.)
 
+**[Example Usage](https://pkg.go.dev/github.com/korylprince/mbox#example-Scanner)**
+
 If you have any issues or questions, email the email address below, or open an issue at:
 https://github.com/korylprince/mbox/issues
 
@@ -16,47 +18,6 @@ https://github.com/korylprince/mbox/issues
 * Changed the default `ScanFunc` for `NewScanner` to `ScanMessage`
 * Changed the default `Scanner.buf` size to 1MB from 4kB (size of buffer at initialization)
 
-# Usage
-
-`godoc github.com/korylprince/mbox`
-
-Or read the source. It's pretty simple and readable.
-
-Example:
-
-```go
-f, err := os.Open("/path/to/mbox")
-if err != nil {
-	//do something with err
-}
-defer f.Close()
-
-s := mbox.NewScanner(f)
-s.MaxTokenSize = 1024 * 1024 * 1024 // 1GB max size, or whatever you want
-for s.Scan() {
-	b := s.Bytes()
-	//copy bytes to buffer, otherwise they will be overwritten
-	buf := make([]byte, len(b))
-	copy(buf, b)
-	r := bufio.NewReader(r)
-
-	_, _, err = r.ReadLine() //read in mbox separator line
-	if err != nil {
-		//do something with err
-	}
-
-	msg, err := mail.ReadMessage(buf)
-	if err != nil {
-		//do something with err
-	}
-
-	//do something with msg!
-
-if err := s.Err(); err != nil {
-	//do something with err
-}
-```
-
 
 # Copyright Information
 
@@ -64,4 +25,4 @@ if err := s.Err(); err != nil {
 
 Test data is taken from http://mailman.postel.org/pipermail/touch-mm.mbox/touch-mm.mbox
 
-All other code is Copyright 2021 Kory Prince (korylprince at gmail dot com) and licensed under the LICENSE provided with the code.
+All other code is Copyright 2022 Kory Prince (korylprince at gmail dot com) and licensed under the LICENSE provided with the code.
